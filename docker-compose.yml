@@ -1,0 +1,46 @@
+version: '3.7'
+
+services:
+  service1:
+    build: ./service1
+    container_name: service1
+    ports:
+      - "8001:80"
+    volumes:
+      - ./logs:/var/log/fastapi
+    environment:
+      - LOG_FILE=/var/log/fastapi/service1.log
+
+  service2:
+    build: ./service2
+    container_name: service2
+    ports:
+      - "8002:80"
+    volumes:
+      - ./logs:/var/log/fastapi
+    environment:
+      - LOG_FILE=/var/log/fastapi/service2.log
+
+  promtail:
+    image: grafana/promtail:2.7.1
+    container_name: promtail
+    volumes:
+      - ./promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
+      - ./logs:/var/log/fastapi
+    command: -config.file=/etc/promtail/promtail-config.yml
+
+  loki:
+    image: grafana/loki:2.7.1
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/local-config.yml
+
+  grafana:
+    image: grafana/grafana:9.0.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
